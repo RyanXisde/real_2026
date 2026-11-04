@@ -1,0 +1,8 @@
+{
+  "name": "pias-sql-loja",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Loja com JavaScript e banco SQLite para Node.js 20",
+  "scripts": {"start": "node server.js"},
+  "dependencies": {"better-sqlite3": "^11.10.0"}
+}
