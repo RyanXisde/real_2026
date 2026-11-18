@@ -199,7 +199,7 @@ aside li a:hover {
 .container { flex: 1; display: flex; }
 main#app { flex: 1; padding: 40px 5%; }
 
-/* --- VITRINE / CARDS --- */
+/* Produtos */
 .cards {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -258,7 +258,7 @@ main#app { flex: 1; padding: 40px 5%; }
     background: var(--orange-vibrant);
 }
 
-/* --- CARRINHO DE COMPRAS --- */
+/* Carrinho */
 .carrinho-page { width: 100%; max-width: 1200px; margin: 0 auto; }
 .carrinho-header h1 { font-size: 1.8rem; margin-bottom: 20px; }
 
@@ -374,7 +374,7 @@ main#app { flex: 1; padding: 40px 5%; }
     border: 1px solid var(--border-color);
 }
 
-/* --- FORMULÁRIO DE CADASTRO --- */
+/* Formulários */
 .cadastro-wrapper {
     display: flex;
     justify-content: center;
@@ -408,7 +408,7 @@ main#app { flex: 1; padding: 40px 5%; }
     border: none; border-radius: 8px; color: white; font-weight: 800; cursor: pointer; margin-top: 10px;
 }
 
-/* --- FOOTER PREMIUM & RESPONSIVO --- */
+/* Rodapé */
 .site-footer {
     background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-dark) 100%);
     color: var(--text-secondary);
@@ -580,7 +580,7 @@ main#app { flex: 1; padding: 40px 5%; }
     opacity: 0.7;
 }
 
-/* --- SEÇÃO DE DESTAQUES --- */
+/* Destaques */
 .secao-titulo {
     font-size: 1.5rem;
     margin: 20px 0 15px 0;
@@ -673,7 +673,7 @@ main#app { flex: 1; padding: 40px 5%; }
     filter: brightness(1.15);
 }
 
-/* --- ESTILOS DE PREÇO COM DESCONTO --- */
+/* Preços */
 .container-preco {
     display: flex;
     align-items: center;
@@ -705,7 +705,7 @@ main#app { flex: 1; padding: 40px 5%; }
     text-transform: uppercase;
 }
 
-/* --- TELA DE CONFIGURAÇÕES --- */
+/* Configurações */
 .config-wrapper {
     display: flex;
     justify-content: center;
@@ -763,7 +763,7 @@ main#app { flex: 1; padding: 40px 5%; }
     outline: none;
 }
 
-/* SWITCH TOGGLE */
+
 .switch-campo {
     flex-direction: row;
     justify-content: space-between;
@@ -810,7 +810,7 @@ input:checked + .slider:before { transform: translateX(22px); }
     cursor: pointer;
 }
 
-/* --- SUPORTE AO MODO CLARO (LIGHT MODE) --- */
+/* Tema claro */
 body.light-mode {
     --bg-dark: #f0f2f5;
     --bg-surface: #ffffff;
@@ -826,7 +826,7 @@ body.light-mode .campo-config select {
     color: #1a1a2e;
 }
 
-/* --- ESTILO DO BANNER DE CATEGORIA COM LOGO --- */
+/* Banner */
 .categoria-header-banner {
     display: flex;
     align-items: center;
@@ -871,12 +871,12 @@ body.light-mode .campo-config select {
     padding: 50px 0;
 }
 
-/* Posicionamento do card relativo para o botão ficar sobre a imagem */
+
 .card, .card-destaque {
     position: relative;
 }
 
-/* Botão de Favoritar */
+/* Favoritos */
 .btn-favorito {
     position: absolute;
     top: 10px;
@@ -904,7 +904,7 @@ body.light-mode .campo-config select {
     background: rgba(255, 255, 255, 0.2);
 }
 
-/* Resumo no card */
+
 .card-avaliacao-resumo {
     display: flex;
     align-items: center;
@@ -937,7 +937,7 @@ body.light-mode .campo-config select {
     color: #fff;
 }
 
-/* Painel de Avaliações */
+/* Avaliações */
 .painel-avaliacoes {
     margin-top: 12px;
     padding-top: 12px;
@@ -987,7 +987,7 @@ body.light-mode .campo-config select {
     font-size: 0.85rem;
 }
 
-/* Lista de Comentários */
+/* Comentários */
 .item-comentario {
     background: #1a1c30;
     padding: 8px;
@@ -1011,3 +1011,15 @@ body.light-mode .campo-config select {
     color: #6b7280;
     font-size: 0.7rem;
 }
+
+
+.product-link{background:none!important;border:0!important;color:inherit!important;font:inherit!important;padding:0!important;margin:0!important;width:auto!important;text-align:left;cursor:pointer}
+.imagem_produto[data-acao=detalhe]{cursor:pointer}
+.product-detail{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:36px;margin-top:28px;align-items:start;background:var(--bg-card);padding:25px;border-radius:18px}
+.product-detail>img{width:100%;max-height:520px;object-fit:contain;border-radius:12px;background:#121122}
+.product-detail h1{font-size:2rem}.product-detail p{margin:15px 0}.price-large{color:var(--orange-vibrant);font-size:2rem;font-weight:800}
+.admin-panel h2{margin:28px 0 14px}.admin-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}.admin-stats>div{background:var(--bg-card);padding:18px;border-radius:12px}.admin-stats strong{display:block;margin-top:8px;font-size:1.3rem;color:var(--orange-vibrant)}
+.admin-form{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;background:var(--bg-card);padding:18px;border-radius:12px}.admin-form input,.admin-form select{min-width:0;width:100%;padding:12px;border-radius:8px;border:1px solid var(--purple-main);background:var(--bg-dark);color:white}.admin-form label{display:flex;align-items:center;gap:8px}.admin-form label input{width:auto}
+.admin-table-wrap{overflow-x:auto;background:var(--bg-card);border-radius:12px}.admin-table{border-collapse:collapse;width:100%;min-width:600px}.admin-table th,.admin-table td{text-align:left;padding:12px;border-bottom:1px solid var(--border-color)}.admin-table button{background:var(--purple-main);color:white;border:0;border-radius:6px;padding:8px;cursor:pointer}
+@media(max-width:760px){header{padding:10px 12px;gap:8px}.logo img{width:min(32vw,140px)}.header-actions{gap:6px}.header-actions .btn{padding:8px}.header-actions .btn span:not(.badge){display:none}.letra_botao_cadas{width:36px;height:36px}main#app{padding:22px 14px}.cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card h3{font-size:.9rem}.imagem_produto{height:160px}.card button{font-size:.8rem;padding:9px}.carrinho-grid{grid-template-columns:1fr}.carrinho-item{flex-wrap:wrap}.product-detail{grid-template-columns:1fr;padding:15px}.admin-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-form{grid-template-columns:1fr}.site-footer{overflow:hidden}}
+@media(max-width:390px){.cards{grid-template-columns:1fr}.imagem_produto{height:210px}}
