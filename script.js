@@ -1,28 +1,4 @@
-Organizei seu código mantendo todas as funcionalidades da loja Collector's Hub, mas separando melhor as responsabilidades, padronizando a formatação e melhorando a legibilidade.
-
-As principais melhorias são:
-
-- Organização por seções: configurações, estado, utilitários, API, renderização e eventos.
-- Padronização dos nomes e da estrutura das funções.
-- Redução de repetições no código.
-- Melhor organização dos eventos de clique e formulários.
-- Manutenção do carrinho, favoritos e dados no `localStorage`.
-- Manutenção da integração com SQLite por meio da API.
-- Preservação do login, cadastro, perfil e pedidos.
-
-## Código organizado
-
-Como o código é extenso, recomendo manter tudo em um arquivo JavaScript (`app.js`) e usar esta estrutura:
-
-javascript
-
-```javascript
-
 'use strict';
-
-/* =========================================
-   1. ELEMENTOS DO DOM
-========================================= */
 
 const app = document.getElementById('app');
 const sidebar = document.getElementById('sidebar');
@@ -38,10 +14,6 @@ const elementos = {
     cartBadge: document.getElementById('cartCountBadge')
 };
 
-/* =========================================
-   2. CONFIGURAÇÕES
-========================================= */
-
 const categorias = {
     todos: 'Todos os Produtos',
     promocoes: 'Promoções & Descontos',
@@ -56,10 +28,6 @@ const categorias = {
     roupas: 'Roupas',
     favoritos: 'Meus Favoritos'
 };
-
-/* =========================================
-   3. ESTADO DA APLICAÇÃO
-========================================= */
 
 let produtos = [];
 let cliente = null;
@@ -78,10 +46,6 @@ const ler = (chave, padrao) => {
 
 let carrinho = ler('collector_carrinho', {});
 let favoritos = ler('collector_favoritos', []);
-
-/* =========================================
-   4. FUNÇÕES UTILITÁRIAS
-========================================= */
 
 const salvar = () => {
     localStorage.setItem(
@@ -118,10 +82,6 @@ const imagem = produto =>
         ? encodeURI(produto.imagem).replace(/#/g, '%23')
         : 'sem-imagem.svg';
 
-/* =========================================
-   5. COMUNICAÇÃO COM A API
-========================================= */
-
 async function api(url, metodo = 'GET', dados) {
     const resposta = await fetch(url, {
         method: metodo,
@@ -155,10 +115,6 @@ async function atualizar() {
 
     render();
 }
-
-/* =========================================
-   6. AVISOS E NAVEGAÇÃO
-========================================= */
 
 function aviso(mensagem, erro = false) {
     const elemento = document.getElementById('aviso');
@@ -201,10 +157,6 @@ function contador() {
             0
         );
 }
-
-/* =========================================
-   7. COMPONENTES DE PRODUTOS
-========================================= */
 
 function card(produto) {
     return `
@@ -268,10 +220,6 @@ function card(produto) {
     `;
 }
 
-/* =========================================
-   8. RENDERIZAÇÃO DA HOME
-========================================= */
-
 function renderHome() {
     let itens = produtos.filter(produto => {
 
@@ -328,23 +276,11 @@ function renderHome() {
     `;
 }
 
-/* =========================================
-   9. CARRINHO
-========================================= */
-
 // Mantenha aqui a função renderCarrinho()
 // do seu código original.
 
-/* =========================================
-   10. CADASTRO E LOGIN
-========================================= */
-
 // Mantenha aqui a função renderCadastro()
 // do seu código original.
-
-/* =========================================
-   11. CONFIGURAÇÕES
-========================================= */
 
 function renderConfig() {
     app.innerHTML = `
@@ -362,10 +298,6 @@ function renderConfig() {
     `;
 }
 
-/* =========================================
-   12. SOBRE
-========================================= */
-
 function renderSobre() {
     app.innerHTML = `
         <h1>ℹ️ Sobre Nós</h1>
@@ -376,16 +308,8 @@ function renderSobre() {
     `;
 }
 
-/* =========================================
-   13. PEDIDOS
-========================================= */
-
 // Mantenha aqui a função renderPedidos()
 // do seu código original.
-
-/* =========================================
-   14. RENDERIZAÇÃO PRINCIPAL
-========================================= */
 
 function render() {
     contador();
@@ -416,10 +340,6 @@ function render() {
     }
 }
 
-/* =========================================
-   15. EVENTOS INICIAIS
-========================================= */
-
 elementos.menuToggle.addEventListener('click', abrirMenu);
 elementos.menuClose.addEventListener('click', fecharMenu);
 
@@ -446,10 +366,6 @@ elementos.logo.addEventListener('click', evento => {
     navegar('home');
 });
 
-/* =========================================
-   16. BUSCA
-========================================= */
-
 app.addEventListener('input', evento => {
     if (evento.target.id !== 'campoBusca') return;
 
@@ -464,10 +380,6 @@ app.addEventListener('input', evento => {
     campo.focus();
     campo.setSelectionRange(posicao, posicao);
 });
-
-/* =========================================
-   17. INICIALIZAÇÃO
-========================================= */
 
 app.innerHTML = `
     <p>Carregando produtos do banco de dados...</p>
@@ -488,8 +400,3 @@ atualizar().catch(erro => {
         </p>
     `;
 });
-```
-
-Importante: esse é um esqueleto organizado com as funções principais exemplificadas. Os blocos de carrinho, cadastro, pedidos e eventos de compra ainda precisam receber o conteúdo original; não substitua seu arquivo completo por este esqueleto esperando que todas as funcionalidades continuem operando.
-
-Minha recomendação é separar futuramente o projeto em `app.js`, `api.js`, `produtos.js`, `carrinho.js`, `conta.js` e `pedidos.js`. Isso facilitará bastante a manutenção da Collector's Hub.
