@@ -33,3 +33,13 @@ A senha digitada no comando é visível no terminal; faça isso apenas em um com
 
 ## Armazenamento
 O projeto não usa localStorage, sessionStorage ou IndexedDB. Carrinho e favoritos são armazenados em tabelas SQLite por cliente autenticado. Para adicionar ao carrinho ou aos favoritos, faça login. A autenticação usa cookie HttpOnly com o identificador de sessão, cujo hash é armazenado no SQLite; o cookie não armazena dados de produtos ou clientes.
+
+## Configurações
+- Minha conta: nome, telefone, endereço e e-mail (mudança de e-mail exige senha).
+- Segurança: alterar senha e encerrar sessões em outros dispositivos.
+- Aparência: tema claro ou escuro, salvo por conta no SQLite.
+- Notificações: opção para mostrar avisos de pedidos com status atualizado dentro do site; não envia e-mail nem notificações externas.
+- Histórico: lista dos pedidos cadastrados.
+- Privacidade: exportação dos dados da conta e registro de solicitação de exclusão para análise; **a solicitação não apaga a conta automaticamente**.
+- Todas as preferências persistentes ficam no SQLite. Não usa localStorage nem sessionStorage.
+- As novas colunas e a tabela de solicitações são criadas automaticamente na primeira execução da versão atualizada.

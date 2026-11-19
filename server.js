@@ -16,6 +16,17 @@ if (!db.prepare('PRAGMA table_info(cliente)').all().some(c=>c.name==='papel')) d
 db.exec(`CREATE TABLE IF NOT EXISTS auditoria_permissao (id INTEGER PRIMARY KEY, autor_id INTEGER NOT NULL, usuario_id INTEGER NOT NULL, anterior TEXT NOT NULL, novo TEXT NOT NULL, criado_em TEXT DEFAULT CURRENT_TIMESTAMP);`);
 db.exec(`CREATE TABLE IF NOT EXISTS carrinho_item (cliente_id INTEGER NOT NULL REFERENCES cliente(id_cli) ON DELETE CASCADE, produto_id INTEGER NOT NULL REFERENCES produto(id) ON DELETE CASCADE, quantidade INTEGER NOT NULL CHECK(quantidade BETWEEN 1 AND 100), PRIMARY KEY(cliente_id,produto_id));
 CREATE TABLE IF NOT EXISTS favorito (cliente_id INTEGER NOT NULL REFERENCES cliente(id_cli) ON DELETE CASCADE, produto_id INTEGER NOT NULL REFERENCES produto(id) ON DELETE CASCADE, PRIMARY KEY(cliente_id,produto_id));`);
+// Configurações
+for (const [col,sql] of [['tema',"ALTER TABLE cliente ADD COLUMN tema TEXT NOT NULL DEFAULT 'escuro'"],['notificacoes',"ALTER TABLE cliente ADD COLUMN notificacoes INTEGER NOT NULL DEFAULT 1"]]) {
+ if (!db.prepare('PRAGMA table_info(cliente)').all().some(x=>x.name===col)) db.exec(sql);
+}
+db.exec(`CREATE TABLE IF NOT EXISTS solicitacao_privacidade (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ cliente_id INTEGER NOT NULL REFERENCES cliente(id_cli) ON DELETE CASCADE,
+ tipo TEXT NOT NULL CHECK(tipo IN ('exclusao')),
+ status TEXT NOT NULL DEFAULT 'pendente',
+ criada_em TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);`);
 // Consultas SQL
 const stmt = sql => db.prepare(sql);
 const now = () => Math.floor(Date.now()/1000);
@@ -23,7 +34,7 @@ const hash = s => crypto.createHash('sha256').update(s).digest('hex');
 const senhaHash = senha => {const salt=crypto.randomBytes(16).toString('hex');return `${salt}:${crypto.scryptSync(senha,salt,64).toString('hex')}`;};
 const confereSenha=(senha,stored)=>{try{const [salt,h]=stored.split(':');const a=crypto.scryptSync(senha,salt,64),b=Buffer.from(h,'hex');return a.length===b.length&&crypto.timingSafeEqual(a,b)}catch{return false}};
 const cookie = req => Object.fromEntries((req.headers.cookie||'').split(';').map(x=>x.trim().split('=').map(decodeURIComponent)).filter(x=>x.length===2));
-const current = req => {const token=cookie(req).sessao;if(!token)return null;return stmt('SELECT c.id_cli,c.nome_cli,c.email_cli,c.telefone_cli,c.endereco_cli,c.papel FROM sessao s JOIN cliente c ON c.id_cli=s.cliente_id WHERE s.token_hash=? AND s.expira_em>?').get(hash(token),now())||null;};
+const current = req => {const token=cookie(req).sessao;if(!token)return null;return stmt('SELECT c.id_cli,c.nome_cli,c.email_cli,c.telefone_cli,c.endereco_cli,c.papel,c.tema,c.notificacoes FROM sessao s JOIN cliente c ON c.id_cli=s.cliente_id WHERE s.token_hash=? AND s.expira_em>?').get(hash(token),now())||null;};
 const json=(res,status,data,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});res.end(JSON.stringify(data));};
 const fail=(status,msg)=>Object.assign(new Error(msg),{status});
 const session=(res,id)=>{const token=crypto.randomBytes(32).toString('hex');stmt('INSERT INTO sessao(token_hash,cliente_id,expira_em) VALUES(?,?,?)').run(hash(token),id,now()+7*86400);res.setHeader('Set-Cookie',`sessao=${token}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800`);};
@@ -79,6 +90,59 @@ async function api(req,res,url){
   if(b.favorito)stmt('INSERT OR IGNORE INTO favorito(cliente_id,produto_id) VALUES(?,?)').run(c.id_cli,b.id);
   else stmt('DELETE FROM favorito WHERE cliente_id=? AND produto_id=?').run(c.id_cli,b.id);
   return json(res,200,{ok:true});
+ }
+ // Conta e preferências
+ if(method==='GET'&&route==='/api/configuracoes'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');
+  const solicitacao=stmt('SELECT id,status,criada_em FROM solicitacao_privacidade WHERE cliente_id=? ORDER BY id DESC LIMIT 1').get(c.id_cli)||null;
+  return json(res,200,{cliente:c,solicitacao});
+ }
+ if(method==='PATCH'&&route==='/api/configuracoes'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');const b=await body(req);
+  if(!['claro','escuro'].includes(b.tema)||typeof b.notificacoes!=='boolean')throw fail(400,'Preferências inválidas.');
+  stmt('UPDATE cliente SET tema=?,notificacoes=? WHERE id_cli=?').run(b.tema,b.notificacoes?1:0,c.id_cli);
+  return json(res,200,{ok:true});
+ }
+ if(method==='POST'&&route==='/api/conta/email'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');const b=await body(req);
+  if(!emailOk(b.email)||typeof b.senha!=='string')throw fail(400,'Informe um e-mail válido e sua senha.');
+  const cred=stmt('SELECT senha_hash FROM cliente WHERE id_cli=?').get(c.id_cli);
+  if(!confereSenha(b.senha,cred.senha_hash))throw fail(403,'Senha incorreta.');
+  const email=b.email.trim().toLowerCase();
+  if(stmt('SELECT 1 FROM cliente WHERE email_cli=? AND id_cli<>?').get(email,c.id_cli))throw fail(409,'E-mail já cadastrado.');
+  stmt('UPDATE cliente SET email_cli=? WHERE id_cli=?').run(email,c.id_cli);
+  return json(res,200,{ok:true});
+ }
+ if(method==='POST'&&route==='/api/conta/senha'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');const b=await body(req);
+  if(typeof b.atual!=='string'||!required(b.nova,8,128))throw fail(400,'A nova senha precisa ter entre 8 e 128 caracteres.');
+  const cred=stmt('SELECT senha_hash FROM cliente WHERE id_cli=?').get(c.id_cli);
+  if(!confereSenha(b.atual,cred.senha_hash))throw fail(403,'Senha atual incorreta.');
+  db.transaction(()=>{
+   stmt('UPDATE cliente SET senha_hash=? WHERE id_cli=?').run(senhaHash(b.nova),c.id_cli);
+   const token=cookie(req).sessao;
+   stmt('DELETE FROM sessao WHERE cliente_id=? AND token_hash<>?').run(c.id_cli,hash(token||''));
+  })();return json(res,200,{ok:true});
+ }
+ if(method==='POST'&&route==='/api/conta/encerrar-outras-sessoes'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');
+  const token=cookie(req).sessao;
+  const result=stmt('DELETE FROM sessao WHERE cliente_id=? AND token_hash<>?').run(c.id_cli,hash(token||''));
+  return json(res,200,{ok:true,encerradas:result.changes});
+ }
+ if(method==='GET'&&route==='/api/conta/dados'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');
+  const dados=stmt('SELECT id_cli,nome_cli,email_cli,telefone_cli,endereco_cli,criado_em,papel,tema,notificacoes FROM cliente WHERE id_cli=?').get(c.id_cli);
+  const pedidos=stmt('SELECT id_ped,data_ped,valor_total,status FROM pedido WHERE cliente_ped=? ORDER BY id_ped DESC').all(c.id_cli);
+  const favoritos=stmt('SELECT produto_id FROM favorito WHERE cliente_id=?').all(c.id_cli);
+  return json(res,200,{dados,pedidos,favoritos});
+ }
+ if(method==='POST'&&route==='/api/conta/solicitar-exclusao'){
+  const c=current(req);if(!c)throw fail(401,'Entre na sua conta.');const b=await body(req);
+  if(typeof b.senha!=='string'||!confereSenha(b.senha,stmt('SELECT senha_hash FROM cliente WHERE id_cli=?').get(c.id_cli).senha_hash))throw fail(403,'Senha incorreta.');
+  if(stmt("SELECT 1 FROM solicitacao_privacidade WHERE cliente_id=? AND status='pendente'").get(c.id_cli))throw fail(409,'Já existe uma solicitação pendente.');
+  stmt("INSERT INTO solicitacao_privacidade(cliente_id,tipo) VALUES(?,'exclusao')").run(c.id_cli);
+  return json(res,201,{ok:true,mensagem:'Solicitação registrada. A conta não foi excluída automaticamente.'});
  }
  if(method==='GET'&&route==='/api/me')return json(res,200,{cliente:current(req)});
  if(method==='POST'&&route==='/api/cadastro'){
